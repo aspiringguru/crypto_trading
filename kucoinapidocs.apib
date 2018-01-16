@@ -1,0 +1,1517 @@
+FORMAT: 1A
+HOST: https://api.kucoin.com/
+
+# Kucoin API Documentation
+
+## General
+API will be available on Sep.26,2017
+
+All API requests are called buy the standard HTTPS. All POST calls need to specify the parameters of the format to x-www-form-urlencoded.
+
+API server: https://api.kucoin.com
+    
+## Authentication
+
+First create an API KEY in the account center. 
+Each time you access the authorized protection API, you need add the following parameters to headers of request:
+
+```json
+{
+    "KC-API-KEY": "59c5ecfe18497f5394ded813",  
+    "KC-API-NONCE" : 1506219855000   //Client timestamp (exact to milliseconds), before using the calibration time, the server does not accept calls with a time difference of more than 3 seconds
+    "KC-API-SIGNATURE" : "fd83147802c361575bbe72fef32ba90dcb364d388d05cb909c1a6e832f6ca3ac"   //signature after client encryption
+}
+```
+### Signature Calculation 
+Example for Creating an buy order of KCS-BTC :
+
+```java 
+String host = "https://api.kucoin.com";  
+String endpoint = "/v1/KCS-BTC/order";  // API endpoint
+String secret; //The secret assigned when the API created
+     
+/** 
+ *  POST parameters：
+ *    type: BUY
+ *    amount: 10
+ *    price: 1.1
+ *    Arrange the parameters in ascending alphabetical order (lower cases first), then combine them with & (don't urlencode them, don't add ?, don't add extra &), e.g. amount=10&price=1.1&type=BUY    
+ *    将查询参数按照字母升序(小字母在前)排列后用&进行连接(请不要进行urlencode操作,开头不要带?,首位不要有额外的&符号)得到的queryString如:  amount=10&price=1.1&type=BUY
+ */
+String queryString; 
+
+//splice string for signing
+String strForSign = endpoint + "/" + nonce +"/" + queryString;  
+
+//Make a base64 encoding of the completed string
+String signatureStr = Base64.getEncoder().encodeToString(strForSign.getBytes("UTF-8"));
+
+Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+SecretKeySpec secretKeySpec = new SecretKeySpec(secret.getBytes("UTF-8"), "HmacSHA256");
+sha256_HMAC.init(secretKeySpec);
+
+//KC-API-SIGNATURE in header
+String signatureResult =  Hex.encodeHexString(sha256_HMAC.doFinal(signatureStr.getBytes("UTF-8")));
+```
+
+## API KEY Permissions
+To be added
+
+## Language Parameters
+Put it into headers
+```json
+{
+    "Accept-Language": "zh_CN",  
+}
+```
+
+## User API Management [/1]
+
+### Create API KEY [POST /v1/api/create]
+          
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "data": {
+                    "remark": null,
+                    "secret": "54e1a7f3-f5c0-47f2-bdce-f1d5124602e1",
+                    "enabled": true,
+                    "userOid": "59663b126732d50be3ac8bcb",
+                    "accessKey": "59c5ecfe18497f5394ded813",
+                    "createdAt": 1506143486528,
+                    "updatedAt": 1506143486528,
+                    "permissions": null
+                }
+            }
+
+### Update API KEY [POST /v1/api/update]
+
++ Request
+
+    + Attributes
+
+        + key (required) - KEY to be update
+        + enabled  - is enabled
+        + remark  - 
+        + permissions - 
+        
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "data": true
+            }
+
+### List API KEY [GET /v1/api/list]
+        
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "data": [
+                    {
+                        "remark": null,
+                        "secret": "*",  //display whithen 30 minutes after created
+                        "enabled": true,
+                        "userOid": "59663b126732d50be3ac8bcb",
+                        "accessKey": "59c5ecfe18497f5394ded813",
+                        "createdAt": 1506143487000,
+                        "updatedAt": 1506143487000,
+                        "permissions": null
+                    }
+                ]
+            }
+
+### Delete API KEY [POST /v1/api/delete]
+
++ Request
+
+    + Attributes
+
+        + key (required) - 
+        
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "data": true
+            }
+
+
+## Currencies Plugin [/2]
+
+### List exchange rate of coins(Open) [GET /v1/open/currencies]
+
++ Request
+
+    + Attributes
+
+        + coins : BTC -  supports multiple coins, split by comma
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+               "success":true,
+               "code":"OK",
+               "msg":"Operation succeeded.",
+               "timestamp":1508049552782,
+               "data":{
+                  "currencies":[
+                     [
+                        "USD",
+                        "$"
+                     ],
+                     [
+                        "EUR",
+                        "€"
+                     ],
+                     [
+                        "CNY",
+                        "¥"
+                     ],
+                     [
+                        "JPY",
+                        "¥"
+                     ],
+                     [
+                        "CHF",
+                        "CHF"
+                     ],
+                     [
+                        "HKD",
+                        "$"
+                     ],
+                     [
+                        "GBP",
+                        "£"
+                     ],
+                     [
+                        "RUB",
+                        "₽"
+                     ],
+                     [
+                        "AUD",
+                        "$"
+                     ]
+                  ],
+                  "rates":{
+                     "BTC":{
+                        "AUD":7377.67,
+                        "CHF":5642.31,
+                        "HKD":45111.9,
+                        "JPY":648153.6,
+                        "EUR":4892.29,
+                        "GBP":4353.16,
+                        "USD":5777.8,
+                        "RUB":333263.5,
+                        "CNY":38077.43
+                     }
+                  }
+               }
+            }
+
+### Set default currency [POST /v1/user/change-currency]
+
++ Attributes 
+    + currency - e.g.: USD,CNY,JPY
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": null
+            }
+
+## Language [/3]
+
+### List languages(Open) [GET /v1/open/lang-list]
+
++ Request
+
+    + Attributes
+
+        + username (required)
+        + password (required)
+          
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+                "_comment": "last boolean params determines if language is available",
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "data": [
+                    [ "zh_CN", "中文", true], 
+                    [ "en_US", "English", false]
+                ]
+            }
+
+### Change language [POST /v1/user/change-lang]
+
++ Request
+
+    + Attributes
+
+        + lang (required)
+          
++ Response 200 (application/json)
+
+    + Body
+    
+             {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded."
+            }
+
+## User [/7]
+
+### Get user info [GET /v1/user/info ]
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "data": {
+                "referrer_code": "jkLmne",  
+                "photoCredentialValidated": true, 
+                "videoValidated": false,
+                "language": "en_US", 
+                "currency": "USD",
+                "oid": "59663b126732d50be3ac8bcb", 
+                "baseFeeRate": 1,  
+                "hasCredential": true,  
+                "credentialNumber": "5103**********0013", 
+                "phoneValidated": true,
+                "phone": "18******139",
+                "credentialValidated": true,  
+                "googleTwoFaBinding": true,  
+                "nickname": null,
+                "name": "*醇",
+                "hasTradePassword": true,  
+                "emailValidated": true,  
+                "email": "robert2041@163.com",
+                "loginRecord": {
+                  "last": {
+                    "ip": "171.212.112.61",
+                    "context": null,
+                    "time": 1509942507000
+                  },
+                  "current": {
+                    "ip": "127.0.0.1",
+                    "context": null,
+                    "time": 1509942560000
+                  }
+                }
+              }
+            }
+
+## Assets Operation [/10]
+
+### Get coin deposit address  [GET /v1/account/{coin}/wallet/address]
+
++ Parameters 
+    + coin(enum) - coin type. eg: KCS
+
++ Response 200 (application/json)
+    + Body
+
+            {
+               "data": {
+                "oid": "598aeb627da3355fa3e851ca",
+                "address": "598aeb627da3355fa3e851ca",
+                "context": null,
+                "userOid": "5969ddc96732d54312eb960e",
+                "coinType": "KCS",
+                "createdAt": 1502276446000,
+                "deletedAt": null,
+                "updatedAt": 1502276446000,
+                "lastReceivedAt": 1502276446000
+              }
+            }
+
+### Create withdrawal apply [POST /v1/account/{coin}/withdraw/apply]
+
++ Parameters 
+    + coin 
+    
++ Attributes
+    + coin 
+    + amount(number) 
+    + address 
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": null
+            }
+
+### Cancel withdrawal [POST /v1/account/{coin}/withdraw/cancel]
+
++ Parameters 
+    + coin:KCS 
+    
++ Attributes
+    + txOid 
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": null
+            }
+
+### List deposit & withdrawal records [GET /v1/account/{coin}/wallet/records]
+
++ Parameters 
+    + coin 
+    
++ Attributes
+    + type(enum,required) - DEPOSIT,WITHDRAW 
+    + status(enum,required) - FINISHED,CANCEL,PENDING 
+    + limit(number) 
+    + page(number) 
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": {
+                    "datas": [
+                        {
+                            "fee": 1,  
+                            "oid": "5960957d07015669deca1254",
+                            "type": "DEPOSIT",
+                            "amount": 209,
+                            "remark": "",
+                            "status": "CANCEL",
+                            "address": "aag", 
+                            "context": "",
+                            "userOid": "TEST",
+                            "coinType": "BTC",
+                            "createdAt": 1499501950000,
+                            "deletedAt": null,
+                            "updatedAt": 1499502103000,
+                            "outerWalletTxid": null 
+                        }
+                    ],
+                    "total": 7, 
+                    "limit": 2,  
+                    "pageNos": 4, 
+                    "currPageNo": 1, 
+                    "navigatePageNos": [
+                        1,
+                        2,
+                        3,
+                        4
+                    ],
+                    "coinType": "BTC", 
+                    "type": null,  
+                    "userOid": "TEST", 
+                    "status": null, 
+                    "firstPage": true, 
+                    "lastPage": false, 
+                    "startRow": 0
+                }
+            }
+
+
+
+### Get balance of coin [GET /v1/account/{coin}/balance]
+
++ Parameters 
+    + coin:KCS 
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": {
+                  coinType: "BTC",
+                  balance: 1233214,  
+                  freezeBalance: 321321 
+                }
+            }
+
+
+### Get balance by page [GET /v1/account/balances]
+
++ Attributes
+    + limit(number) - page limit，default 12，max 20
+    + page(number) - page number，default 1
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": [{
+                  coinType: "BTC",
+                  balance: 1233214,  
+                  freezeBalance: 321321 
+                }]
+            }
+
+## Trading [/11]
+
+### Create an order [POST /v1/order{?symbol}]
+
++ Parameters
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+
++ Attributes 
+    + type(enum,required) - BUY,SELL
+    + price(number,required): The precision varies. Please fetch the precision of each coin from "List coins" Or "Coin Info"
+    + amount(number,required)  : The precision varies. Please fetch the precision of each coin from "List coins" Or "Coin Info"
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "data": {
+                    "orderOid": "596186ad07015679730ffa02" 
+                }
+            }
+
+### List active orders [GET /v1/order/active{?symbol}]
+
++ Attributes 
+    + symbol(enum,required) - Trading symbol e.g. KCS-BTC
+    + type (enum) - 
+      - BUY
+      - SELL
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "_comment": "arr[0] Time  arr[1] Order Type arr[2] Price arr[3] Amount arr[4]   Deal Amount arr[5] OrderOid",
+                "success": true,
+                "code": "OK",
+                "data": {
+                    "SELL": [],
+                    "BUY": [
+                        [
+                            1499563694000,
+                            "BUY",
+                            38,
+                            5,
+                            0,
+                            "596186ad07015679730ffa02"
+                        ],
+                        [
+                            1499563686000,
+                            "BUY",
+                            35,
+                            5,
+                            0,
+                            "596186a007015679730ffa01"
+                        ],
+                        [
+                            1499563699000,
+                            "BUY",
+                            22,
+                            5,
+                            0,
+                            "596186b207015679730ffa03"
+                        ]
+                    ]
+                }
+            }
+
+### List active orders in kv format [GET /v1/order/active-map{?symbol}]
+
++ Attributes    
+    + symbol(enum,required) - Trading symbol e.g. KCS-BTC
+    + type (enum)
+      - BUY
+      - SELL
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "timestamp": 1508306965706,
+                "data": {
+                    "SELL": [
+                        {
+                            "oid": "59e59b279bd8d31d093d956e",
+                            "type":"SELL",
+                            "userOid": null,
+                            "coinType": "KCS",
+                            "coinTypePair": "BTC",
+                            "direction": "SELL",
+                            "price": 0.1,
+                            "dealAmount": 0,
+                            "pendingAmount": 100,
+                            "createdAt": 1508219688000,
+                            "updatedAt": 1508219688000
+                        }
+                    ],
+                    "BUY": [
+                        {
+                            "oid": "59e42bf09bd8d374c9956caa",
+                            "type":"BUY",
+                            "userOid": null,
+                            "coinType": "KCS",
+                            "coinTypePair": "BTC",
+                            "direction": "BUY",
+                            "price": 0.00009727,
+                            "dealAmount": 31.14503,
+                            "pendingAmount": 16.94827,
+                            "createdAt": 1508125681000,
+                            "updatedAt": 1508125681000
+                        }
+                    ]
+                }
+            }
+
+### Cancel orders [POST /v1/cancel-order{?symbol}]
+
++ Parameters
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+
++ Attributes 
+    + orderOid(required) - Order OID    
+    + type(enum,required) - BUY,SELL
+    
++ Response 200 (application/json)
+    + Body
+
+             {
+                "success": true,
+                "code": "OK",
+                "data": null
+            }
+
+### Cancel all orders [POST /v1/order/cancel-all{?symbol}]
+
++ Parameters
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+    
++ Attributes   
+    + type(enum) - BUY,SELL
+    
++ Response 200 (application/json)
+ > Note: Some transactions failed to cancel, success will return true and code will return SYSTEM_ERROR
+
+    + Body
+
+             {
+                "success": true,
+                "code": "OK",
+                "data": null
+            }
+
+### List dealt orders(merged) [GET /v1/order/dealt{?symbol}]
+
++ Attributes
+    + symbol(enum) - Trading symbol e.g. KCS-BTC
+    + type(enum) - BUY,SELL 
+    + limit(number) - when symbol is empty, then page * limit Can not exceed 100; and when symbol is not empty, then limit Can not exceed 20
+    + page(number) 
+    + since(number) - timestamp
+    + before(number) - timestamp
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "timestamp": 1508306200007,
+                "data": {
+                    "total": 1416,
+                    "datas": [
+                        {
+                            "createdAt": 1508219588000,
+                            "amount": 92.79323381,
+                            "dealValue": 0.00927932,
+                            "dealPrice": 0.0001,
+                            "fee": 0.00000001,
+                            "feeRate": 0,
+                            "oid": "59e59ac49bd8d31d09f85fa8",
+                            "orderOid": "59e59ac39bd8d31d093d956a",
+                            "coinType": "KCS",
+                            "coinTypePair": "BTC",
+                            "direction": "BUY",
+                            "dealDirection": "BUY"
+                        },
+                        {
+                            "createdAt": 1508219588000,
+                            "amount": 92.79323381,
+                            "dealValue": 0.00927932,
+                            "dealPrice": 0.0001,
+                            "fee": 0.00000001,
+                            "feeRate": 0,
+                            "oid": "59e59ac49bd8d31d09f85fa7",
+                            "orderOid": "59e41c949bd8d374c9956c74",
+                            "coinType": "KCS",
+                            "coinTypePair": "BTC",
+                            "direction": "SELL",
+                            "dealDirection": "BUY"
+                        }
+                    ],
+                    "limit": 2,
+                    "page": 1
+                }
+            }
+
+### List dealt orders(specific symbol) [GET /v1/deal-orders{?symbol}]
+
++ Attributes
+    + symbol(enum,required) - Trading symbol e.g. KCS-BTC
+    + type(enum,optional): BUY,SELL 
+    + limit(number) 
+    + page(number)
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": {
+                "datas": [
+                  {
+                    "oid": "59c47e7904dd275c7696ed15",
+                    "dealPrice": 5040,
+                    "orderOid": "59c47e7804dd275cd15773fc",
+                    "direction": "BUY",
+                    "amount": 100000000,
+                    "dealValue": 5040,
+                    "createdAt": 1506049657000
+                  },
+                  {
+                    "oid": "59c3979104dd275c7696ec4d",
+                    "dealPrice": 6510,
+                    "orderOid": "59c3913d04dd275c76f2a10c",
+                    "direction": "SELL",
+                    "amount": 100000000,
+                    "dealValue": 6510,
+                    "createdAt": 1505990545000
+                  }
+                ],
+                "total": 51,
+                "limit": 12,
+                "pageNos": 5,
+                "currPageNo": 1,
+                "navigatePageNos": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5
+                ],
+                "userOid": "59bc96b89346432ce9cb7a8e",
+                "direction": null,
+                "startRow": 0,
+                "firstPage": true,
+                "lastPage": false
+              }
+            }
+
+### Order details [GET /v1/order/detail{?symbol}]
+    
++ Attributes
+    + symbol(enum,required) - Trading symbol e.g. KCS-BTC
+    + type (enum,required) - 
+      - BUY
+      - SELL
+    + limit: 20 (number) - page limit of trading list
+    + page: 1 (number) - page number of trading list
+    + orderOid (required) - Order OID 
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "timestamp": 1508308350807,
+                "data": {
+                    "coinType": "KCS",
+                    "dealValueTotal": 0.00938022,
+                    "dealPriceAverage": 0.0001009,
+                    "feeTotal": 2e-8,
+                    "userOid": "5969ddc96732d54312eb960e",
+                    "dealAmount": 0,
+                    "dealOrders": {
+                        "total": 709,
+                        "firstPage": true,
+                        "lastPage": false,
+                        "datas": [
+                            {
+                                "amount": 1,
+                                "dealValue": 0.0001009,
+                                "fee": 1e-8,
+                                "dealPrice": 0.0001009,
+                                "feeRate": 0
+                            },
+                            {
+                                "amount": 92.79323381,
+                                "dealValue": 0.00927932,
+                                "fee": 1e-8,
+                                "dealPrice": 0.0001,
+                                "feeRate": 0
+                            }
+                        ],
+                        "currPageNo": 1,
+                        "limit": 2,
+                        "pageNos": 355
+                    },
+                    "coinTypePair": "BTC",
+                    "orderPrice": 0.0001067,
+                    "type": "SELL",
+                    "orderOid": "59e41cd69bd8d374c9956c75",
+                    "pendingAmount": 187.34
+                }
+            }
+
+## Market [/14]      
+ 
+### Tick(Open) [GET /v1/open/tick{?symbol}]
+
++ Attributes
+    + symbol(enum) - Trading symbol e.g. KCS-BTC. If not specified then you will get data of all symbols.
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": {
+                "coinType": "KCS",
+                "trading": true,
+                "lastDealPrice": 5040,
+                "buy": 5000,
+                "sell": 5040,
+                "coinTypePair": "BTC",
+                "sort": 0,
+                "feeRate": 0.001,
+                "volValue": 308140577,
+                "high": 6890,
+                "datetime": 1506050394000,
+                "vol": 5028739175025,
+                "low": 5040,
+                "changeRate": -0.2642
+              }
+            }
+
+### Order books(Open) [GET /v1/open/orders{?symbol}]
+
++ Attributes 
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+    + group(number):  e.g.   100,1000
+    + limit(number)
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": {
+                 "_comment": "arr[0]   Price arr[1]   Amount arr[2]   Volume",
+                 "SELL": [
+                    [20, 5, 100],
+                    [19, 5, 95]
+                  ],
+                  "BUY": [
+                    [18, 5, 90],
+                    [17, 5, 85]
+                  ]
+                }
+            }
+ 
+ 
+### Buy Order Books(Open) [GET /v1/open/orders-buy{?symbol}]
+
++ Attributes 
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+    + group(number):  e.g.   100,1000
+    + limit(number)
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                    [18, 5, 90],
+                    [17, 5, 85]
+                ]
+            }
+ 
+### Sell Order Books(Open) [GET /v1/open/orders-sell{?symbol}]
+
++ Attributes 
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+    + group(number):  e.g.   100,1000
+    + limit(number)
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                    [18, 5, 90],
+                    [17, 5, 85]
+                ]
+            }
+
+### Recently deal orders(Open) [GET /v1/open/deal-orders{?symbol}]
+
++ Attributes 
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+    + limit(number)
+    + since(number):  Since Timestamp e.g. 1506050394000
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+              "_comment": "arr[0]   Timestamp arr[1]   Order Type arr[2]   Price arr[3]   Amount arr[4]   Volume",
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                [
+                  1506037604000,
+                  "SELL",
+                  5210,
+                  48600633397,
+                  2532093
+                ],
+                [
+                  1506037604000,
+                  "SELL",
+                  5800,
+                  10227827586,
+                  593214
+                ]
+              ]
+            }
+
+### List trading markets(Open) [GET /v1/open/markets]
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "timestamp": 1509939797091,
+              "data": [
+                "BTC",
+                "ETH",
+                "NEO",
+                "USDT"
+              ]
+            }
+
+### List trading symbols tick (Open) [GET /v1/market/open/symbols]
+
+  > Note: Use /v1/{symbol}/open/tick to get the specified trend data.  
+    Use /v1/market/symbols for login user to get more content.
+
++ Attributes 
+    + market(enum,optional): BTC,ETH,USDT,NEO
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                {
+                  "coinType": "KCS",
+                  "trading": true,
+                  "lastDealPrice": 4500,
+                  "buy": 4120,
+                  "sell": 4500,
+                  "coinTypePair": "BTC",
+                  "sort": 0,
+                  "feeRate": 0.001,
+                  "volValue": 324866889,
+                  "high": 6890,
+                  "datetime": 1506051488000,
+                  "vol": 5363831663913,
+                  "low": 4500,
+                  "changeRate": -0.3431
+                },
+                {
+                  "coinType": "KNC",
+                  "trading": true,
+                  "lastDealPrice": null,
+                  "buy": 1000000,
+                  "sell": null,
+                  "coinTypePair": "BTC",
+                  "sort": 1,
+                  "feeRate": 0.001,
+                  "volValue": 0,
+                  "high": null,
+                  "datetime": 1506051488000,
+                  "vol": 0,
+                  "low": null,
+                  "changeRate": null
+                }
+              ]
+            }      
+            
+            
+### List trendings(Open) [GET /v1/market/open/coins-trending]
+
++ Attributes 
+    + market(enum,optional): BTC,ETH,USDT,NEO
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                    {
+                      "coinPair": "BTM-BTC",
+                      "deals": [
+                        [
+                          1506049200000,
+                          null
+                        ],
+                        [
+                          1506045600000,
+                          null
+                        ],
+                        [
+                          1506042000000,
+                          null
+                        ],
+                        [
+                          1506038400000,
+                          1260
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }      
+
+### Get kline data(Open) [GET /v1/open/kline{?symbol}]
+    
++ Attributes 
+    + symbol(enum,required) - Trading symbol, e.g. KCS-BTC
+    + type:1min,5min,15min,30min,1hour,8hour,1day,1week - candle unit
+    + from(number) - From timestamp  e.g.: 1507479171
+    + to(number) - To timestamp e.g.: 1507479171
+    + limit - amount of result 
+    
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "_comment": "arr[0]: Timestamp   arr[1]: Open   arr[2]: High  arr[3]: Low  arr[4]: Close  arr[5]: Amount arr[6]: Volume",
+              "data": [
+                    {
+                      "coinPair": "BTM-BTC",
+                      "deals": [
+                        [
+                          1506049200000,
+                          null
+                        ],
+                        [
+                          1506045600000,
+                          null
+                        ],
+                        [
+                          1506042000000,
+                          null
+                        ],
+                        [
+                          1506038400000,
+                          1260
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }      
+
+
+### Get kline config(Open, TradingView Version) [GET /v1/open/chart/config]
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+               "supports_marks":false,
+               "supports_time":true,
+               "supports_search":true,
+               "supports_group_request":false,
+               "supported_resolutions":[
+                  "1",
+                  "5",
+                  "15",
+                  "30",
+                  "60",
+                  "480",
+                  "D",
+                  "W"
+               ]
+            }
+
+### Get symbol tick(Open, TradingView Version) [GET /v1/open/chart/symbols{?symbol}]
+
++ Attributes 
+    + symbol - Trading symbol e.g., KCS-BTC (uppercase)
+    
++ Response 200 (application/json)
+
+    + Body
+    
+            {
+               "ticker":"KCS-BTC",
+               "minmov":1,
+               "minmov2":0,
+               "session":"24x7",
+               "timezone":"Asia/Shanghai",
+               "has_intraday":true,
+               "description":"KCS-BTC",
+               "supported_resolutions":[
+                  "1",
+                  "5",
+                  "15",
+                  "30",
+                  "60",
+                  "480",
+                  "D",
+                  "W"
+               ],
+               "type":"stock",
+               "currency_code":"BTC",
+               "exchange-listed":"",
+               "volume_precision":8,
+               "pointvalue":1,
+               "name":"KCS-BTC",
+               "exchange-traded":"",
+               "pricescale":100000000,
+               "has_no_volume":true
+            }
+
+### Get kline data(Open, TradingView Version) [GET /v1/open/chart/history]
+
++ Attributes 
+    + symbol - Trading symbol e.g., KCS-BTC (uppercase)
+    + resolution: 1,5,15,30,60,480,D,W
+    + from(number) - From timestamp  e.g.: 1507479171
+    + to(number) - To timestamp e.g.: 1507479171
+    
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+               "success": true,
+               "code": "OK",
+               "s":"ok",
+               "c":[
+                  0.00008999,
+                  0.0001195,
+                  0.00012488,
+                  0.00009231,
+                  0.00008483,
+                  0.00009245,
+                  0.00008964,
+                  0.00006934,
+                  0.0000836,
+                  0.00009188
+               ],
+               "t":[
+                  1507201200,
+                  1507287600,
+                  1507374000,
+                  1507460400,
+                  1507546800,
+                  1507633200,
+                  1507719600,
+                  1507806000,
+                  1507892400,
+                  1507978800
+               ],
+               "v":[
+                  677184.95840835,
+                  1383918.84700098,
+                  756304.77228774,
+                  633909.71537665,
+                  436374.60456221,
+                  425808.74766085,
+                  469397.21371071,
+                  537288.87941776,
+                  573752.12538949,
+                  590450.62919965
+               ],
+               "h":[
+                  0.000092,
+                  0.0001214,
+                  0.000125,
+                  0.00012468,
+                  0.000103,
+                  0.0000932,
+                  0.0001175,
+                  0.00009056,
+                  0.0000858,
+                  0.00009368
+               ],
+               "l":[
+                  0.0000671,
+                  0.0000886,
+                  0.00010998,
+                  0.00008312,
+                  0.00008315,
+                  0.00008,
+                  0.00008101,
+                  0.000063,
+                  0.000068,
+                  0.0000792
+               ],
+               "o":[
+                  0.0000671,
+                  0.00009,
+                  0.00011912,
+                  0.00012462,
+                  0.00009544,
+                  0.00008381,
+                  0.00009245,
+                  0.00008846,
+                  0.00006875,
+                  0.00008349
+               ]
+            }   
+ 
+### Get coin info(Open) [GET /v1/market/open/coin-info]
+
++ Attributes 
+    + coin
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": 
+                {
+                  "withdrawMinFee": 100000,
+                  "withdrawMinAmount": 200000,
+                  "withdrawFeeRate": 0.001,
+                  "confirmationCount": 12,
+                  "name": "Bitcoin",
+                  "tradePrecision": 7,
+                  "coin": "BTC",
+                  "infoUrl": null,
+                  "enableWithdraw": true,
+                  "enableDeposit": true,
+                  "depositRemark": "",
+                  "withdrawRemark": ""
+                }
+            }     
+            
+### List coins(Open) [GET /v1/market/open/coins]
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                {
+                  "withdrawMinFee": 100000,
+                  "withdrawMinAmount": 200000,
+                  "withdrawFeeRate": 0.001,
+                  "confirmationCount": 12,
+                  "name": "Bitcoin",
+                  "tradePrecision": 7,
+                  "coin": "BTC",
+                  "infoUrl": null,
+                  "enableWithdraw": true,
+                  "enableDeposit": true,
+                  "depositRemark": "",
+                  "withdrawRemark": ""
+                }
+              ]
+            } 
+
+## Market for user [/15]   
+
+### List trading symbols tick [GET /v1/market/symbols]
+
++ Attributes
+    + market (enum)
+      + BTC
+      + ETH
+      + USDT
+      + NEO
+      + KCS
+    + symbol (enum) - e.g. KCS-BTC
+    + filter (enum)
+      + FAVOURITE
+      + STICK
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                {
+                  "coinType": "KCS",
+                  "trading": true,
+                  "lastDealPrice": 4500,
+                  "buy": 4120,
+                  "sell": 4500,
+                  "coinTypePair": "BTC",
+                  "sort": 0,
+                  "feeRate": 0.001,
+                  "volValue": 324866889,
+                  "high": 6890,
+                  "datetime": 1506051488000,
+                  "vol": 5363831663913,
+                  "low": 4500,
+                  "changeRate": -0.3431,
+                  "change" : 123.12,
+                  "stick": false,
+                  "fav": false
+                },
+                {
+                  "coinType": "KNC",
+                  "trading": true,
+                  "lastDealPrice": null,
+                  "buy": 1000000,
+                  "sell": null,
+                  "coinTypePair": "BTC",
+                  "sort": 1,
+                  "feeRate": 0.001,
+                  "volValue": 0,
+                  "high": null,
+                  "datetime": 1506051488000,
+                  "vol": 0,
+                  "low": null,
+                  "changeRate": null,
+                  "change: 0,
+                  "stick": false,
+                  "fav": false
+                }
+              ]
+            }      
+            
+### Get stick symbols [GET /v1/market/stick-symbols]
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                "BTC-CNY"
+               ]
+                
+            }     
+          
+### Get favourite symbols [GET /v1/market/fav-symbols]
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": [
+                "BTC-CNY"
+               ]
+                
+            }     
+ 
+### Add/Delete favourite symbol  [POST /v1/market/symbol/fav]
+
++ Attributes
+    + symbol - 如：KCS-BTC 
+    + fav(number) - 0:delete 1:add
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": null
+            }
+
+
+### Add/Delete stick symbol [POST /v1/market/symbol/stick]
+
++ Attributes 
+    + symbol - 如：KCS-BTC 
+    + stick(number) - 0:delete 1:add
+    
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "data": null
+            }
+
+## Invitation Bonus [/16]
+
+### Get invitation count [GET /v1/referrer/descendant/count]
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": {
+                  "count": 20, 
+                  "countTwo": 40, 
+                  "countThree": 60
+              }
+            }
+
+### Get invitation bonus info [GET /v1/account/promotion/info]
+
++ Attributes 
+    + coin - coin symbol
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "timestamp": 1507618731969,
+                "data": {
+                    "assignedCount": 0,
+                    "drawingCount": 0,
+                    "grantCountDownSeconds": 604800
+                }
+            }
+
+
+### Get invitation bonus summary [GET /v1/account/promotion/sum]
+
++ Attributes 
+    + coin - coin symbol
+
++ Response 200 (application/json)
+    + Body
+
+            {
+                "success": true,
+                "code": "OK",
+                "msg": "Operation succeeded.",
+                "timestamp": 1507533113876,
+                "data": [
+                    {
+                        "oid": "59cf3449bc2ec0820158ea4d",
+                        "coin": "BTC",
+                        "amount": 0.05978693,
+                        "count": 128,
+                        "userOid": "59c3aa5cbc2ec035341689d8",
+                        "lastGrantAt": 1507532458000,
+                        "createdAt": 1506704761000,
+                        "updatedAt": 1507532458000,
+                        "undrawnAmount": 0.05978693,
+                        "drawnAmount": 0
+                    }
+                ]
+            }
+            
+### Extract invitation bonus [POST /v1/account/promotion/draw]
+
++ Attributes 
+    + coin:KCS - 币种
+
++ Response 200 (application/json)
+    + Body
+
+            {
+              "success": true,
+              "code": "OK",
+              "msg": "Operation succeeded.",
+              "data": {
+                    "count": 0 // The number of successful extracted
+                } 
+            }
